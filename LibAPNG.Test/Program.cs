@@ -30,9 +30,11 @@ namespace LibAPNG.Test
                 if (!Directory.Exists(directoryName))
                     Directory.CreateDirectory(directoryName);
 
-                foreach (Frame frame in apng.Frames)
+                for (var i = 0; i < apng.Frames.Length; i++)
                 {
-                    var fileName = directoryName + "/" + frame.fcTLChunk.SequenceNumber + ".png";
+                    var frame = apng.Frames[i];
+                    //var fileName = directoryName + "/" + frame.fcTLChunk.SequenceNumber + ".png";
+                    var fileName = directoryName + "/" + i + ".png";
                     File.WriteAllBytes(fileName, frame.GetStream().ToArray());
                 }
             }
