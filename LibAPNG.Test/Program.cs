@@ -7,23 +7,34 @@ namespace LibAPNG.Test
     {
         private static void Main(string[] args)
         {
-            if (args.Length != 1)
+#if DEBUG
+            var workspace = @"C:\APNG.NET\LibAPNG.Test";
+#else
+            var commandLineArgs = Environment.GetCommandLineArgs();
+            var workspace = commandLineArgs.Length > 1 ? commandLineArgs[1] : Path.GetDirectoryName(commandLineArgs[0]);
+#endif
+
+            var files = Directory.GetFiles(workspace, "*.png", SearchOption.TopDirectoryOnly);
+
+            foreach(var path in files)
             {
-                Console.Write("Usage: APNG.Test.exe filename.png");
-                Console.ReadKey();
+                var apng = new APNG(path);
 
-                return;
-            }
-            var apng = new APNG(args[0]);
+                if (!apng.DefaultImageIsAnimated)
+                    continue;
 
-            if (!apng.DefaultImageIsAnimated)
-                File.WriteAllBytes("0.png", apng.DefaultImage.GetStream().ToArray());
+                var directoryName = workspace + "/" + Path.GetFileNameWithoutExtension(path);
 
-            foreach (Frame frame in apng.Frames)
-            {
-                File.WriteAllBytes(
-                                   frame.fcTLChunk.SequenceNumber + ".png",
-                                   frame.GetStream().ToArray());
+                Console.WriteLine(directoryName);
+
+                if (!Directory.Exists(directoryName))
+                    Directory.CreateDirectory(directoryName);
+
+                foreach (Frame frame in apng.Frames)
+                {
+                    var fileName = directoryName + "/" + frame.fcTLChunk.SequenceNumber + ".png";
+                    File.WriteAllBytes(fileName, frame.GetStream().ToArray());
+                }
             }
         }
     }
